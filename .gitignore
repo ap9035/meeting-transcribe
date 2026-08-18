@@ -1,0 +1,23 @@
+.DS_Store
+**/.DS_Store
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+*.log
+
+# 本機授權碼、音檔與轉錄輸出（現在預設輸出到專案資料夾底下）不進版控
+hf_token.txt
+/逐字稿/
+*.m4a
+*.mp3
+*.wav
+*.aac
+*.caf
+*.aiff
+*.flac
+*.ogg
+*.wma
+*.mp4
+*.mov

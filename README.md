@@ -24,19 +24,43 @@
 ## 環境需求
 
 - macOS（以 M1 / 16GB 驗證）
+- git（macOS 沒內建，見下方步驟 0；不需要 Homebrew）
 - 網路：僅安裝當下需要，用來下載 Python 套件、語音模型，以及 Hugging Face 授權碼
 - 約 1.5GB 磁碟空間給模型
 
+> 完全沒有終端機經驗的人，請改看 [使用說明.md](使用說明.md)，那份從「怎麼打開終端機」開始一步步寫。
+
 ## 安裝（只做一次）
+
+### 步驟 0：確認有 git
+
+macOS 預設沒有裝 git。打開「終端機」（⌘+空白鍵 → 輸入「終端機」→ Enter），執行：
+
+```bash
+git --version
+```
+
+- 印出 `git version …` → 已經有了，跳到步驟 1。
+- 跳出「要安裝命令列開發者工具嗎？」的視窗 → 按「安裝」→「同意」，等它裝完（5～20 分鐘），
+  再執行一次 `git --version` 確認。視窗被關掉的話，用 `xcode-select --install` 叫回來。
+- 印出 `command not found: git` → 同樣執行 `xcode-select --install`。
+
+這是 Apple 官方的 Xcode Command Line Tools，不需要 Homebrew，也不會動到系統其他東西。
+
+### 步驟 1：下載並安裝
 
 **請用 `git clone` 下載，不要從 GitHub 網頁按「Download ZIP」。**
 瀏覽器下載、AirDrop、訊息傳過來的檔案會被 macOS 貼上「隔離（quarantine）」標記，雙擊時會被 Gatekeeper 擋下來；`git clone` 抓下來的檔案沒有這個標記，可以直接執行。（`更新.command` 本來也需要資料夾是 `git clone` 來的才能運作。）
 
+一行搞定下載 + 安裝：
+
 ```bash
-git clone https://github.com/ap9035/meeting-transcribe.git
+cd ~/Documents && git clone https://github.com/ap9035/meeting-transcribe.git && bash meeting-transcribe/安裝.command
 ```
 
-1. 把資料夾放到固定位置，之後不要再搬（例如「文件」）。
+或者分開做：
+
+1. `git clone https://github.com/ap9035/meeting-transcribe.git`，把資料夾放到固定位置，之後不要再搬（例如「文件」）。
 2. 雙擊 `安裝.command`。
    萬一被擋（畫面說「無法打開，因為來自未識別的開發者」），表示這包是用下載或 AirDrop 傳來的。**打開「終端機」→ 輸入 `bash` 和一個空格 → 把 `安裝.command` 從 Finder 直接拖進終端機視窗 → 按 Enter。**
    從終端機執行不經過 Gatekeeper，一定跑得起來，也不用自己打路徑。
@@ -110,6 +134,8 @@ Whisper 很常把中文人名聽成同音錯字。編輯 `bin/人名對照表.tx
 
 | 狀況 | 處理 |
 |---|---|
+| `command not found: git` | 執行 `xcode-select --install`，按「安裝」，裝完再試 |
+| clone 時說 `already exists and is not an empty directory` | 已經下載過了，直接跑 `bash ~/Documents/meeting-transcribe/安裝.command` |
 | 雙擊沒反應／「無法打開，來自未識別的開發者」 | 開「終端機」，輸入 `bash` 加空格，把該檔案從 Finder 拖進去按 Enter |
 | 說「還沒安裝」 | 重跑一次 `安裝.command` |
 | 沒有講者標記 | 授權碼沒設好，或還沒在模型頁按同意。重跑安裝 |
