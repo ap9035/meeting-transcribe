@@ -154,6 +154,15 @@ Whisper 很常把中文人名聽成同音錯字。編輯 `bin/人名對照表.tx
 3. **faster-whisper** `large-v3-turbo`（CPU、int8、`language=zh`）轉文字
 4. **OpenCC** `s2twp` 轉成台灣繁體，再套人名對照、對齊時間戳後輸出
 
+### 幻覺（hallucination）防護
+
+`large-v3` 系列模型的訓練資料混進了不少 YouTube 影片的罐頭口播（例如「請訂閱」「字幕志工」之類的頻道置入文字），偶爾會在錄音的靜音或訊噪比低的片段裡，無中生有地冒出這類句子，甚至卡在複讀迴圈裡連續重複同一句。目前有兩層防護：
+
+- 轉錄時開啟 `word_timestamps` + `hallucination_silence_threshold=2.0`，讓 faster-whisper 在靜音中偵測到疑似幻覺時直接跳過該段。
+- 輸出前跑 `dedupe_repeated_segments`：只要連續兩句以上、正規化後長度達 6 個字的句子完全相同，就視為複讀幻覺，合併成一句（時間戳會延伸蓋住原本的重複範圍）。字數門檻是為了不誤刪「對，對」「嗯嗯」這類正常口語重複。
+
+如果錄音品質特殊、還是常遇到類似狀況，可以試著調降 `WHISPER_MODEL`（見上方「大概要等多久」一節）或縮短靜音片段再轉錄。
+
 Python 環境由 `uv` 建在獨立目錄，不會動到系統 Python。
 
 ## 移除

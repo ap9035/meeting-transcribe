@@ -171,6 +171,42 @@ def hhmmss(sec):
 
 
 # --------------------------------------------------------------------------
+# 幻覺（hallucination）防護：Whisper 偶爾會在靜音／訊噪比低的片段裡
+# 卡進複讀迴圈，連續吐出同一句話（常見於 large-v3 系列，跟訓練資料裡
+# 混入大量 YouTube 影片的罐頭口播、字幕組宣傳有關）
+# --------------------------------------------------------------------------
+DEDUPE_MIN_LEN = 6  # 正規化後未達此字數不處理，避免誤殺「對，對」「嗯嗯」這類正常口語
+
+
+def _normalize_for_dedupe(text):
+    return text.strip().strip("。！？，、,.!?～~ \u3000")
+
+
+def dedupe_repeated_segments(segments, min_len=DEDUPE_MIN_LEN):
+    """合併連續且完全相同的句子。
+
+    只處理正規化後長度達到 min_len 的句子：太短的重複（確認語、口頭禪）
+    是正常口語，保留原樣；達到門檻的完整句子連續重複兩次以上，
+    在會議逐字稿情境下幾乎都是模型卡住複讀，直接合併成一句，
+    並把結束時間延伸蓋住被丟掉的重複範圍，維持時間軸連續。
+    """
+    if not segments:
+        return segments
+    deduped = []  # 每個元素: [start, end, text, normalized]
+    dropped = 0
+    for start, end, text in segments:
+        norm = _normalize_for_dedupe(text)
+        if deduped and len(norm) >= min_len and norm == deduped[-1][3]:
+            deduped[-1][1] = end
+            dropped += 1
+            continue
+        deduped.append([start, end, text, norm])
+    if dropped:
+        log(f"    偵測到 {dropped} 句疑似複讀幻覺，已自動合併")
+    return [(s, e, t) for s, e, t, _ in deduped]
+
+
+# --------------------------------------------------------------------------
 def main():
     if len(sys.argv) < 2:
         log("用法：transcribe.py <音檔路徑> [輸出資料夾]")
@@ -271,6 +307,8 @@ def main():
         vad_parameters={"min_silence_duration_ms": 500},
         condition_on_previous_text=False,  # 避免長會議把前面的錯誤一路複製下去
         beam_size=5,
+        word_timestamps=True,  # hallucination_silence_threshold 需要逐字時間戳才能運作
+        hallucination_silence_threshold=2.0,  # 靜音中疑似幻覺（複讀/罐頭句）時直接跳過該段
     )
 
     segments = []
@@ -282,6 +320,8 @@ def main():
         pct = min(99, int(seg.end / duration * 100))
         print(f"\r    進度 {pct:3d}%  已完成 {hhmmss(seg.end)} / {hhmmss(duration)}", end="", flush=True)
     print(f"\r    進度 100%  共 {len(segments)} 句{' ' * 20}", flush=True)
+
+    segments = dedupe_repeated_segments(segments)
 
     del model
     gc.collect()
