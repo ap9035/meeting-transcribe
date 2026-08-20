@@ -1,7 +1,7 @@
 #!/bin/bash
 # ==========================================================================
 #  會議逐字稿工具 —— 一次性安裝
-#  這支只需要跑一次。跑完之後，日常使用只要雙擊「逐字稿.command」。
+#  這支只需要跑一次。跑完之後，日常使用只要雙擊「點這裡兩下執行逐字稿程式.command」。
 # ==========================================================================
 set -u
 
@@ -125,11 +125,13 @@ PY
 
 # --- 收尾：把日常入口放到桌面，並解除下載隔離 ------------------------------
 xattr -dr com.apple.quarantine "$HERE" 2>/dev/null
-chmod +x "$HERE/逐字稿.command" "$HERE/更新.command" 2>/dev/null
+chmod +x "$HERE/點這裡兩下執行逐字稿程式.command" "$HERE/更新.command" 2>/dev/null
 mkdir -p "$HERE/逐字稿"
 
-DESKTOP_LINK="$HOME/Desktop/📝 產生逐字稿.command"
-cp "$HERE/逐字稿.command" "$DESKTOP_LINK" 2>/dev/null
+DESKTOP_LINK="$HOME/Desktop/📝 點這裡兩下執行逐字稿程式.command"
+# 舊版本的桌面捷徑名稱，換名字後把它清掉，免得桌面上留兩個
+rm -f "$HOME/Desktop/📝 產生逐字稿.command" 2>/dev/null
+cp "$HERE/點這裡兩下執行逐字稿程式.command" "$DESKTOP_LINK" 2>/dev/null
 # 讓桌面捷徑知道程式本體在哪
 printf '%s\n' "$HERE" > "$APP_DIR/install_path.txt"
 chmod +x "$DESKTOP_LINK" 2>/dev/null
@@ -147,8 +149,8 @@ echo "=========================================="
 echo "  安裝完成 🎉"
 echo "=========================================="
 echo
-echo "桌面上已經放好「📝 產生逐字稿」和「🔄 更新工具」。"
-echo "以後要轉錄，雙擊「📝 產生逐字稿」、選音檔就好，不用再開這個視窗。"
+echo "桌面上已經放好「📝 點這裡兩下執行逐字稿程式」和「🔄 更新工具」。"
+echo "以後要轉錄，雙擊「📝 點這裡兩下執行逐字稿程式」、選音檔就好，不用再開這個視窗。"
 echo "結果會存到這個資料夾底下的「逐字稿」資料夾（$HERE/逐字稿）。"
 echo
 echo "以後有新版本時，雙擊「🔄 更新工具」就能更新，不用重跑這支安裝程式。"

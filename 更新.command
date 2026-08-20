@@ -132,7 +132,7 @@ else
 fi
 
 xattr -dr com.apple.quarantine "$HERE" 2>/dev/null
-chmod +x "$HERE/逐字稿.command" "$HERE/安裝.command" "$HERE/更新.command" 2>/dev/null
+chmod +x "$HERE/點這裡兩下執行逐字稿程式.command" "$HERE/安裝.command" "$HERE/更新.command" 2>/dev/null
 
 echo
 if [ "$STASH_CONFLICT" -eq 1 ]; then
@@ -149,7 +149,7 @@ else
   echo "=========================================="
   echo
   echo "目前版本：$(git log -1 --format='%h %s' 2>/dev/null)"
-  alert "更新完成" "已經更新到最新版本，可以繼續使用「📝 產生逐字稿」。"
+  alert "更新完成" "已經更新到最新版本，可以繼續使用「📝 點這裡兩下執行逐字稿程式」。"
 fi
 echo
 read -r -p "按 Enter 關閉…"

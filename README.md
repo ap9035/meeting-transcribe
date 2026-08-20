@@ -69,7 +69,7 @@ cd ~/Documents && git clone https://github.com/ap9035/meeting-transcribe.git && 
    - 註冊：<https://huggingface.co/join>
    - 同意條款：<https://huggingface.co/pyannote/speaker-diarization-community-1>
    - 建立 token：<https://huggingface.co/settings/tokens>（複製 `hf_` 開頭那串）
-4. 裝完桌面會出現「📝 產生逐字稿」和「🔄 更新工具」。建議先拿 5 分鐘的錄音測一次。
+4. 裝完桌面會出現「📝 點這裡兩下執行逐字稿程式」和「🔄 更新工具」。建議先拿 5 分鐘的錄音測一次。
 5. 打開 `bin/人名對照表.txt`，把常出現的同事、客戶、專有名詞加進去。
 
 安裝約 10–20 分鐘。之後完全離線。
@@ -78,7 +78,7 @@ cd ~/Documents && git clone https://github.com/ap9035/meeting-transcribe.git && 
 
 ## 日常使用
 
-1. 雙擊桌面的「📝 產生逐字稿」
+1. 雙擊桌面的「📝 點這裡兩下執行逐字稿程式」
 2. 選錄音檔（m4a / mp3 / wav / aac / mp4 / mov…）
 3. 等它跑完，逐字稿會自動打開
 
@@ -91,7 +91,7 @@ cd ~/Documents && git clone https://github.com/ap9035/meeting-transcribe.git && 
 想換速度／準確度，可改 `bin/transcribe.py` 裡的 `WHISPER_MODEL`（預設 `large-v3-turbo`），或設環境變數：
 
 ```bash
-WHISPER_MODEL=medium ./逐字稿.command
+WHISPER_MODEL=medium ./點這裡兩下執行逐字稿程式.command
 ```
 
 `medium` / `small` 比較快，中文人名和專有名詞會比較容易錯。
@@ -171,5 +171,5 @@ Python 環境由 `uv` 建在獨立目錄，不會動到系統 Python。
 
 - `~/Library/Application Support/MeetingTranscribe/`
 - `~/.cache/huggingface/`
-- 桌面上的「📝 產生逐字稿」與「🔄 更新工具」捷徑
+- 桌面上的「📝 點這裡兩下執行逐字稿程式」與「🔄 更新工具」捷徑
 - 這個專案資料夾（含裡面的「逐字稿」輸出資料夾）
