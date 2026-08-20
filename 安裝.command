@@ -124,7 +124,15 @@ if tok.exists() and tok.read_text().strip():
 PY
 
 # --- 收尾：把日常入口放到桌面，並解除下載隔離 ------------------------------
-xattr -dr com.apple.quarantine "$HERE" 2>/dev/null
+# 解除「從網路下載」的隔離標記，不然 macOS 會擋著不給雙擊。
+# 注意：有些 macOS 版本的 xattr 不支援 -r，所以用 find 一個一個處理才保險。
+unquarantine() {
+  [ -e "$1" ] || return 0
+  find "$1" -exec xattr -d com.apple.quarantine {} \; 2>/dev/null
+  return 0
+}
+
+unquarantine "$HERE"
 chmod +x "$HERE/點這裡兩下執行逐字稿程式.command" "$HERE/更新.command" 2>/dev/null
 mkdir -p "$HERE/逐字稿"
 
@@ -135,13 +143,13 @@ cp "$HERE/點這裡兩下執行逐字稿程式.command" "$DESKTOP_LINK" 2>/dev/n
 # 讓桌面捷徑知道程式本體在哪
 printf '%s\n' "$HERE" > "$APP_DIR/install_path.txt"
 chmod +x "$DESKTOP_LINK" 2>/dev/null
-xattr -dr com.apple.quarantine "$DESKTOP_LINK" 2>/dev/null
+unquarantine "$DESKTOP_LINK"
 
 UPDATE_LINK="$HOME/Desktop/🔄 更新工具.command"
 if [ -f "$HERE/更新.command" ]; then
   cp "$HERE/更新.command" "$UPDATE_LINK" 2>/dev/null
   chmod +x "$UPDATE_LINK" 2>/dev/null
-  xattr -dr com.apple.quarantine "$UPDATE_LINK" 2>/dev/null
+  unquarantine "$UPDATE_LINK"
 fi
 
 echo

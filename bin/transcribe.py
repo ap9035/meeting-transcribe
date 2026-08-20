@@ -348,8 +348,19 @@ def main():
     raw_rows, _ = label_speakers(raw_rows)
     rows = merge_same_speaker(raw_rows)
 
+    # 同一個音檔重跑時不要蓋掉舊的逐字稿：檔名已存在就加上日期時間後綴，
+    # 逐字稿與字幕共用同一個後綴，兩份檔案才配得起來。
     stem = audio_path.stem
-    txt_path = out_dir / f"{stem}_逐字稿.txt"
+    suffix = ""
+    if (out_dir / f"{stem}_逐字稿.txt").exists() or (out_dir / f"{stem}_字幕.srt").exists():
+        suffix = "_" + time.strftime("%Y%m%d_%H%M")
+        n = 2
+        while (out_dir / f"{stem}_逐字稿{suffix}.txt").exists():
+            suffix = f"_{time.strftime('%Y%m%d_%H%M')}({n})"
+            n += 1
+        log(f"    已有同名逐字稿，這次另存為「{stem}_逐字稿{suffix}.txt」，舊的保留不動")
+
+    txt_path = out_dir / f"{stem}_逐字稿{suffix}.txt"
     with txt_path.open("w", encoding="utf-8") as f:
         f.write(f"檔案：{audio_path.name}\n")
         f.write(f"長度：{hhmmss(duration)}\n")
@@ -369,7 +380,7 @@ def main():
         return f"{ms // 3600000:02d}:{ms % 3600000 // 60000:02d}:{ms % 60000 // 1000:02d},{ms % 1000:03d}"
 
     # 字幕用未合併的原始句子，時間軸才會準
-    srt_path = out_dir / f"{stem}_字幕.srt"
+    srt_path = out_dir / f"{stem}_字幕{suffix}.srt"
     with srt_path.open("w", encoding="utf-8") as f:
         for i, (start, end, text, sp) in enumerate(raw_rows, 1):
             body = f"{sp}：{text}" if turns else text

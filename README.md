@@ -84,6 +84,15 @@ cd ~/Documents && git clone https://github.com/ap9035/meeting-transcribe.git && 
 
 成品在這個專案資料夾底下的「逐字稿」資料夾。
 
+- 同名輸出不覆蓋：`{檔名}_逐字稿.txt` 已存在時，這次改存成
+  `{檔名}_逐字稿_YYYYMMDD_HHMM.txt`（字幕 `.srt` 用同一個後綴）。
+- 同時只跑一份：用 `~/Library/Application Support/MeetingTranscribe/正在執行.lock`
+  當鎖，第二個視窗會被擋下並提示等待；殘留的鎖會靠 PID 檢查自動清掉。
+- 執行紀錄改放 `~/Library/Application Support/MeetingTranscribe/logs/`，
+  每次執行各一份（保留最近 20 份），兩份同時跑也不會互相蓋掉。
+- 程式資料夾被搬走或改名時，會自動在 `~/Documents`、`~/Desktop`、`~/Downloads`
+  底下找回來並修正 `install_path.txt`，桌面捷徑不會就這樣壞掉。
+
 ## 大概要等多久
 
 在 M1 / 16GB 上，**1 小時會議大約 45–75 分鐘**。期間電腦可以照常用，只是會比較燙、比較慢。建議開完會就按下去，去做別的事。

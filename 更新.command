@@ -12,9 +12,21 @@ REPO_URL="https://github.com/ap9035/meeting-transcribe.git"
 
 # 找出程式本體的位置（可能是原始資料夾，也可能是桌面上的捷徑）
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-if [ ! -d "$HERE/.git" ] && [ -f "$APP_DIR/install_path.txt" ]; then
-  HERE="$(cat "$APP_DIR/install_path.txt")"
+if [ ! -d "$HERE/.git" ]; then
+  SAVED="$(cat "$APP_DIR/install_path.txt" 2>/dev/null || echo "")"
+  if [ -n "$SAVED" ] && [ -d "$SAVED/.git" ]; then
+    HERE="$SAVED"
+  else
+    # 資料夾被搬走或改名了 → 在常見位置找一下，找到就順手把記錄修好
+    FOUND="$(find "$HOME/Documents" "$HOME/Desktop" "$HOME/Downloads" \
+               -maxdepth 3 -path '*/bin/transcribe.py' -print -quit 2>/dev/null)"
+    if [ -n "$FOUND" ]; then
+      HERE="$(cd "$(dirname "$FOUND")/.." && pwd)"
+    fi
+  fi
 fi
+# 每次更新都把位置重新記一次，桌面捷徑才不會因為資料夾搬家就失效
+[ -f "$HERE/bin/transcribe.py" ] && printf '%s\n' "$HERE" > "$APP_DIR/install_path.txt" 2>/dev/null
 
 alert() {  # 標題, 內容
   osascript -e "display dialog \"$2\" with title \"$1\" buttons {\"好\"} default button 1 with icon note" >/dev/null 2>&1
@@ -131,7 +143,15 @@ else
   echo "      尚未安裝過語音環境，略過（請先執行「安裝.command」）。"
 fi
 
-xattr -dr com.apple.quarantine "$HERE" 2>/dev/null
+# 解除「從網路下載」的隔離標記，不然 macOS 會擋著不給雙擊。
+# 注意：有些 macOS 版本的 xattr 不支援 -r，所以用 find 一個一個處理才保險。
+unquarantine() {
+  [ -e "$1" ] || return 0
+  find "$1" -exec xattr -d com.apple.quarantine {} \; 2>/dev/null
+  return 0
+}
+
+unquarantine "$HERE"
 chmod +x "$HERE/點這裡兩下執行逐字稿程式.command" "$HERE/安裝.command" "$HERE/更新.command" 2>/dev/null
 
 echo
