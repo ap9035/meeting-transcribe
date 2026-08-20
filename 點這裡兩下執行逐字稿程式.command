@@ -5,6 +5,15 @@
 # ==========================================================================
 set -u
 
+# --------------------------------------------------------------------------
+# 下面整支包在一對大括號裡，看起來多餘，其實是必要的保險：
+# bash 是「執行到哪、才從檔案讀到哪」，所以程式跑到一半時檔案若被改掉
+# （更新工具 git pull 換掉自己、或有人在旁邊編輯），bash 會接著讀到錯位的
+# 內容而爆出莫名的語法錯誤。包成一個複合指令，bash 會先把整段讀進記憶體，
+# 開跑之後就不再回頭讀檔，跑到一半被換掉也不受影響。
+# --------------------------------------------------------------------------
+{
+
 APP_DIR="$HOME/Library/Application Support/MeetingTranscribe"
 VENV="$APP_DIR/venv"
 LOG_DIR="$APP_DIR/logs"
@@ -110,9 +119,11 @@ fi
 # 若上一次是被強制關掉留下的殘骸（PID 已不存在），就自動清掉再繼續。
 if ! mkdir "$LOCK_DIR" 2>/dev/null; then
   OLD_PID="$(cat "$LOCK_DIR/pid" 2>/dev/null || echo "")"
-  # 除了 PID 還活著，也確認它真的是這支程式（PID 有可能被別的程式重複使用）
-  if [ -n "$OLD_PID" ] && kill -0 "$OLD_PID" 2>/dev/null \
-     && ps -p "$OLD_PID" -o command= 2>/dev/null | grep -q '逐字稿'; then
+  OLD_START="$(cat "$LOCK_DIR/start" 2>/dev/null || echo "")"
+  # 光看 PID 還不夠：PID 會被系統回收給別的程式用。連「行程啟動時間」一起比對，
+  # 兩個都一樣才算是真的還在跑，這樣判斷跟檔名叫什麼無關。
+  NOW_START="$(ps -p "${OLD_PID:-0}" -o lstart= 2>/dev/null || echo "")"
+  if [ -n "$OLD_PID" ] && [ -n "$OLD_START" ] && [ "$NOW_START" = "$OLD_START" ]; then
     clear
     banner "已經有一份正在轉錄中" "$YEL"
     say "電腦目前正在處理另一個錄音檔。"
@@ -129,6 +140,7 @@ if ! mkdir "$LOCK_DIR" 2>/dev/null; then
   mkdir "$LOCK_DIR" 2>/dev/null || true
 fi
 echo "$$" > "$LOCK_DIR/pid" 2>/dev/null
+ps -p $$ -o lstart= 2>/dev/null > "$LOCK_DIR/start"
 # 正常結束、按 Ctrl-C、或直接把視窗關掉，都要記得把鎖拿掉
 unlock() { rm -rf "$LOCK_DIR" 2>/dev/null; }
 trap unlock EXIT
@@ -215,3 +227,8 @@ else
 fi
 
 pause_close
+
+# 明確在這裡結束，bash 就不會再回頭去讀檔案剩下的部分
+exit 0
+
+}   # ←（對應開頭那個「先整段讀完再執行」的大括號）
